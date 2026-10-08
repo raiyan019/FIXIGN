@@ -56,7 +56,7 @@ export const DESIGN_W = 1920;
 export const DESIGN_H = 1047; // hero height = Rectangle 70's Y in Figma
 
 /* ===================== SECTION 2 (Services) ===================== */
-export const SECTION2_H = 12000; // was 10396
+export const SECTION2_H = 14340; // was 13690
 
 export const about = {
   heading: ["Boost the Growth Development", "Agency Your Branding!"],
@@ -272,4 +272,146 @@ export const testimonials = {
     { ...testimonialBase, id: 2 },
     { ...testimonialBase, id: 3 },
   ],
+};
+
+/* ===================== SECTION 13 (FAQ) ===================== */
+const faqAnswer1 =
+  "Starting your project is easy—simply contact us via our website or email. We’ll discuss your goals, gather project details, and create a tailored plan to bring your vision to life.";
+const faqAnswer2 =
+  "Project costs vary depending on complexity, scope, and features. After understanding your requirements, we provide a transparent estimate that aligns with your budget and project needs.";
+const faqAnswer3 =
+  "Fixign stands out by blending creativity, strategy, and user research to craft designs that truly work. We don’t just design interfaces—we create meaningful experiences that connect with users and drive business results.";
+
+const faqAnswer4 =
+  "The timeline depends on the project’s size and complexity. Smaller projects, like landing pages, may take 2–3 weeks, while full apps or platforms can take several months. We always provide a clear timeline before starting.";
+const faqAnswer5 =
+  "Fixign specializes in website design, mobile app design, dashboards, product design, and wireframes & prototypes. We focus on creating user-friendly, visually engaging solutions that balance creativity with functionality.";
+
+const faqAnswer6 =
+  "We maintain quality across time zones by using clear communication, modern project management tools, and flexible collaboration schedules. Our workflow ensures smooth progress and consistent results, no matter where you are.";
+
+export const faq = {
+  heading: "Curious About",
+  accent: "Fixign?",
+  heading2: "Find Your Answers Here!",
+  subtitle: [
+    "Everything you need to know about our services, process, and",
+    "how we bring your ideas to life.",
+  ],
+  // answers 1 and 2 are repeated on the other questions for now. Edit each "a" later.
+  items: [
+    { q: "How do I begin working with Fixign?", a: faqAnswer1 },
+    { q: "What is the typical cost of a UI/UX design project?", a: faqAnswer2 },
+    {
+      q: "What sets Fixign apart from other UI/UX design agencies?",
+      a: faqAnswer3,
+    },
+    { q: "How long does a typical design project take?", a: faqAnswer4 },
+    { q: "What are Fixign’s main areas of expertise in UI/UX?", a: faqAnswer5 },
+    {
+      q: "How do you maintain quality when working across different time zones?",
+      a: faqAnswer6,
+    },
+  ],
+};
+export const FAQ_DEFAULT_OPEN = -1; // -1 = all closed, 0 = first question open
+
+/* ===================== SECTION 14 (Join Us) ===================== */
+export const join = {
+  kicker: "Join Us",
+  person: {
+    photo: "/images/sarah.png",
+    name: "Sarah Johnson",
+    role: "CEO & Founder",
+    text: "We put your ideas and thus your wishes in the form of a unique web project that inspires.”“We put your ideas and thus your wishes in the form of a unique web project that inspires.",
+    phoneLabel: "Phone:",
+    phone: "+012 345 678 90",
+    emailLabel: "Email:",
+    email: "admin@example.com",
+    followLabel: "Follow Me:",
+    // the 4 boxes (empty in the design). Add real links here.
+    socials: [
+      { label: "Facebook", href: "#" },
+      { label: "Instagram", href: "#" },
+      { label: "X", href: "#" },
+      { label: "LinkedIn", href: "#" },
+    ],
+  },
+  form: {
+    fields: [
+      { name: "fullName", label: "Full Name", type: "text", required: true },
+      { name: "phone", label: "Phone Number", type: "tel" },
+      { name: "email", label: "Email", type: "email", required: true },
+      { name: "title", label: "Project Title", type: "text" },
+      { name: "message", label: "Message (Project Details)", type: "textarea" },
+    ],
+    send: "Send Message",
+    sending: "Sending...",
+    sent: "Message Sent",
+    work: {
+      label: "Work With Us",
+      href: "mailto:admin@example.com?subject=Work%20with%20Fixign",
+    },
+  },
+};
+
+/* ===================== Join Us pop-up messages ===================== */
+export const joinToast = {
+  duration: 4500, // ms before it closes by itself
+  success: {
+    type: "success",
+    title: "Message sent successfully!",
+    text: "Thanks for reaching out. We'll get back to you soon.",
+  },
+  error: {
+    type: "error",
+    title: "Please check the form",
+    text: "Fill in the required fields with a valid email.",
+  },
+};
+
+/* ===================== FOOTER ===================== */
+export const footer = {
+  about: [
+    "From UX design to full-scale development, Fixign builds",
+    "meaningful digital products and brand identities that",
+    "inspire confidence and create lasting impact.",
+  ],
+  services: {
+    title: "Services",
+    links: [
+      { label: "UX/UI Design", href: "#services" },
+      { label: "Web Design", href: "#services" },
+      { label: "Graphic Design", href: "#services" },
+      { label: "Mobile App Design", href: "#services" },
+      { label: "Web App Development", href: "#services" },
+      { label: "Branding Design", href: "#services" },
+    ],
+  },
+  quick: {
+    title: "Quick links",
+    links: [
+      { label: "Contact Us", href: "#contact" },
+      { label: "About Us", href: "#services" },
+      { label: "Pricing", href: "#pricing" },
+      { label: "Privacy Policy", href: "#" },
+      { label: "Terms & Condition", href: "#" },
+      { label: "Pricing", href: "#pricing" },
+    ],
+  },
+  contact: {
+    title: "CONTACT US:",
+    phones: ["+8801603474320", "+8801603474320"],
+    email: "support@fixign.com",
+  },
+  follow: {
+    title: "FOLLOW US:",
+    socials: [
+      { id: "facebook", label: "Facebook", href: "#" },
+      { id: "instagram", label: "Instagram", href: "#" },
+      { id: "linkedin", label: "LinkedIn", href: "#" },
+      { id: "x", label: "X", href: "#" },
+    ],
+  },
+  copyright: "©2025. Fixign. All Right Reserved.",
 };

@@ -1,4 +1,7 @@
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import Logo from "./Logo.jsx";
 import {
   about,
   services,
@@ -11,6 +14,12 @@ import {
   brandBreak,
   whyUs,
   testimonials,
+  faq,
+  join,
+  joinToast,
+  brand,
+  footer,
+  FAQ_DEFAULT_OPEN,
   marqueeText,
   DEFAULT_ACTIVE_CARD,
   DESIGN_W,
@@ -47,6 +56,301 @@ function BrandBreak({ text, glow = false }) {
         ))}
       </text>
     </svg>
+  );
+}
+
+/* ---- FAQ (Framer Motion) ---- */
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+};
+
+function FaqItem({ index, q, a, open, onToggle }) {
+  const id = `faq-panel-${index}`;
+  return (
+    <motion.div className="fq-item" variants={fadeUp}>
+      <button
+        className="fq-q"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={id}
+      >
+        <motion.span
+          whileHover={{ x: 6 }}
+          transition={{ type: "spring", stiffness: 300, damping: 22 }}
+        >
+          {index + 1}. {q}
+        </motion.span>
+
+        {/* the + turns into an x when open */}
+        <motion.span
+          className="fq-icon"
+          animate={{ rotate: open ? 45 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path d="M8 1v14M1 8h14" stroke="#fff" strokeWidth="1.5" />
+          </svg>
+        </motion.span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            id={id}
+            role="region"
+            key="answer"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <p className="fq-a">{a}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function Toast({ toast, onClose }) {
+  return createPortal(
+    <div className="tt-wrap" aria-live="polite">
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key={toast.id}
+            className={`tt tt--${toast.type}`}
+            role="status"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 80 }}
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+          >
+            <span className="tt-icon" aria-hidden="true">
+              {toast.type === "success" ? (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path
+                    d="M3.5 9.5l3.6 3.6L14.5 5.5"
+                    stroke="#111"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path
+                    d="M9 4v6M9 13.5v.5"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              )}
+            </span>
+            <div className="tt-body">
+              <strong>{toast.title}</strong>
+              <p>{toast.text}</p>
+            </div>
+            <button className="tt-x" onClick={onClose} aria-label="Close">
+              ×
+            </button>
+            <motion.span
+              className="tt-bar"
+              initial={{ scaleX: 1 }}
+              animate={{ scaleX: 0 }}
+              transition={{ duration: toast.duration / 1000, ease: "linear" }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>,
+    document.body,
+  );
+}
+
+/* ---- JOIN US ---- */
+const MailIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 20 20"
+    fill="none"
+    aria-hidden="true"
+  >
+    <rect
+      x="2"
+      y="4"
+      width="16"
+      height="12"
+      rx="2"
+      stroke="#111"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M2.5 5.5l7.5 5.5 7.5-5.5"
+      stroke="#111"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+function JoinUs() {
+  const { kicker, person, form } = join;
+  const empty = Object.fromEntries(form.fields.map((f) => [f.name, ""]));
+  const [values, setValues] = useState(empty);
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState("idle"); // idle | sending | sent
+  const [toast, setToast] = useState(null);
+
+  const showToast = (t) =>
+    setToast({ ...t, id: Date.now(), duration: joinToast.duration });
+
+  // close by itself
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), toast.duration);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const validate = (v) => {
+    const e = {};
+    form.fields.forEach((f) => {
+      const val = v[f.name].trim();
+      if (f.required && !val) e[f.name] = "Required";
+      else if (f.type === "email" && val && !/^\S+@\S+\.\S+$/.test(val))
+        e[f.name] = "Invalid email";
+    });
+    return e;
+  };
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setValues((v) => ({ ...v, [name]: value }));
+    if (errors[name]) setErrors((er) => ({ ...er, [name]: undefined }));
+    if (status === "sent") setStatus("idle");
+  };
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    const er = validate(values);
+    setErrors(er);
+    if (Object.values(er).some(Boolean)) {
+      showToast(joinToast.error);
+      return;
+    }
+    setStatus("sending");
+    // TODO: replace this timer with your real request (fetch to Formspree etc.)
+    setTimeout(() => {
+      setStatus("sent");
+      setValues(empty);
+      showToast(joinToast.success);
+    }, 900);
+  };
+
+  return (
+    <div className="jn" id="contact">
+      <h2 className="jn-kicker">
+        <span className="jn-dot" aria-hidden="true" />
+        {kicker}
+      </h2>
+
+      {/* left card */}
+      <aside className="jn-left">
+        <img
+          className="jn-photo"
+          src={person.photo}
+          alt=""
+          onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+        />
+        <h3 className="jn-name">{person.name}</h3>
+        <p className="jn-role">{person.role}</p>
+        <p className="jn-text">{person.text}</p>
+        <p className="jn-line jn-phone">
+          <span>{person.phoneLabel}</span> {person.phone}
+        </p>
+        <p className="jn-line jn-email">
+          <span>{person.emailLabel}</span> {person.email}
+        </p>
+        <span className="jn-follow">{person.followLabel}</span>
+        {person.socials.map((s, i) => (
+          <a
+            key={s.label}
+            className="jn-social"
+            style={{ "--i": i }}
+            href={s.href}
+            aria-label={s.label}
+          />
+        ))}
+      </aside>
+
+      {/* right card: form */}
+      <form className="jn-form" onSubmit={onSubmit} noValidate>
+        {form.fields.map((f) => (
+          <div
+            key={f.name}
+            className={`jn-field ${errors[f.name] ? "jn-field--err" : ""}`}
+            data-f={f.name}
+          >
+            <label htmlFor={`jn-${f.name}`}>
+              {f.label}
+              {errors[f.name] && (
+                <span className="jn-err">{errors[f.name]}</span>
+              )}
+            </label>
+            {f.type === "textarea" ? (
+              <textarea
+                id={`jn-${f.name}`}
+                name={f.name}
+                value={values[f.name]}
+                onChange={onChange}
+              />
+            ) : (
+              <input
+                id={`jn-${f.name}`}
+                name={f.name}
+                type={f.type}
+                value={values[f.name]}
+                onChange={onChange}
+              />
+            )}
+          </div>
+        ))}
+
+        <button
+          type="submit"
+          className="jn-btn jn-send"
+          disabled={status === "sending"}
+        >
+          <MailIcon />
+          {status === "sending"
+            ? form.sending
+            : status === "sent"
+              ? form.sent
+              : form.send}
+        </button>
+
+        <a className="jn-btn jn-work" href={form.work.href}>
+          <MailIcon />
+          {form.work.label}
+        </a>
+
+        <span className="jn-sr" role="status">
+          {status === "sent" ? form.sent : ""}
+        </span>
+      </form>
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
+    </div>
   );
 }
 
@@ -139,8 +443,165 @@ function StatCard({ index, data }) {
   );
 }
 
+/* ---- FOOTER ---- */
+const SocialIcon = ({ id }) => {
+  switch (id) {
+    case "facebook":
+      return (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            fill="#1877f2"
+            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+          />
+        </svg>
+      );
+    case "instagram":
+      return (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <defs>
+            <linearGradient id="fo-ig" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0" stopColor="#feda75" />
+              <stop offset=".5" stopColor="#d62976" />
+              <stop offset="1" stopColor="#4f5bd5" />
+            </linearGradient>
+          </defs>
+          <rect
+            x="2.5"
+            y="2.5"
+            width="19"
+            height="19"
+            rx="5.5"
+            fill="none"
+            stroke="url(#fo-ig)"
+            strokeWidth="2"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="4.3"
+            fill="none"
+            stroke="url(#fo-ig)"
+            strokeWidth="2"
+          />
+          <circle cx="17.6" cy="6.4" r="1.3" fill="url(#fo-ig)" />
+        </svg>
+      );
+    case "linkedin":
+      return (
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path
+            fill="#0a66c2"
+            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+          />
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            fill="#000"
+            d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"
+          />
+        </svg>
+      );
+  }
+};
+
+function FooterColumn({ className, data }) {
+  return (
+    <nav className={`fo-col ${className}`} aria-label={data.title}>
+      <h3>{data.title}</h3>
+      <ul>
+        {data.links.map((l, i) => (
+          <li key={i}>
+            <a href={l.href}>{l.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="fo">
+      {/* same logo as the navbar */}
+      <div className="fo-logo">
+        <Logo name={brand.name} />
+      </div>
+
+      <p className="fo-about">
+        {footer.about.map((l) => (
+          <span key={l}>{l}</span>
+        ))}
+      </p>
+
+      <FooterColumn className="fo-services" data={footer.services} />
+      <FooterColumn className="fo-quick" data={footer.quick} />
+
+      {/* contact */}
+      <h3 className="fo-title fo-title--contact">{footer.contact.title}</h3>
+      <span className="fo-ico fo-ico--phone" aria-hidden="true">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#2a6ed6"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+        </svg>
+      </span>
+      {footer.contact.phones.map((p, i) => (
+        <a key={i} className={`fo-line fo-phone-${i}`} href={`tel:${p}`}>
+          {p}
+        </a>
+      ))}
+      <span className="fo-ico fo-ico--mail" aria-hidden="true">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#2a6ed6"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="m22 7-10 6L2 7" />
+        </svg>
+      </span>
+      <a className="fo-line fo-mail" href={`mailto:${footer.contact.email}`}>
+        {footer.contact.email}
+      </a>
+
+      {/* follow */}
+      <h3 className="fo-title fo-title--follow">{footer.follow.title}</h3>
+      {footer.follow.socials.map((s, i) => (
+        <a
+          key={s.id}
+          className="fo-social"
+          style={{ "--i": i }}
+          href={s.href}
+          aria-label={s.label}
+        >
+          <SocialIcon id={s.id} />
+        </a>
+      ))}
+
+      <span className="fo-rule" aria-hidden="true" />
+      <p className="fo-copy">{footer.copyright}</p>
+    </footer>
+  );
+}
+
 export default function Services() {
   const [active, setActive] = useState(DEFAULT_ACTIVE_CARD);
+  const [openFaq, setOpenFaq] = useState(FAQ_DEFAULT_OPEN);
   const [project, setProject] = useState(0);
   const current = services[active];
 
@@ -513,6 +974,48 @@ export default function Services() {
           <StatCard key={i} index={i + 1} data={card} />
         ))}
       </div>
+      {/* ===== SECTION 13 : FAQ ===== */}
+      <MotionConfig reducedMotion="user">
+        <motion.div
+          className="fq"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.15 }}
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.09 } },
+          }}
+        >
+          <motion.h2 className="fq-title" variants={fadeUp}>
+            {faq.heading} <span className="y">{faq.accent}</span>
+            <br />
+            {faq.heading2}
+          </motion.h2>
+
+          <motion.p className="fq-sub" variants={fadeUp}>
+            {faq.subtitle.map((l) => (
+              <span key={l}>{l}</span>
+            ))}
+          </motion.p>
+
+          <div className="fq-list">
+            {faq.items.map((item, i) => (
+              <FaqItem
+                key={i}
+                index={i}
+                q={item.q}
+                a={item.a}
+                open={openFaq === i}
+                onToggle={() => setOpenFaq(openFaq === i ? -1 : i)}
+              />
+            ))}
+          </div>
+        </motion.div>
+      </MotionConfig>
+      {/* ===== SECTION 14 : Join Us ===== */}
+      <JoinUs />
+      {/* ===== FOOTER ===== */}
+      <Footer />
     </>
   );
 }

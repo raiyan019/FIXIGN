@@ -5,6 +5,7 @@ import Logo from "./Logo.jsx";
 import {
   about,
   services,
+  serviceImage,
   graphicCards,
   statCards,
   marquee2,
@@ -672,8 +673,7 @@ export default function Services() {
       {/* image behind everything (changes with the active card) */}
       <div className="s2-image">
         <img
-          key={current.id}
-          src={current.image}
+          src={serviceImage}
           alt=""
           onError={(e) => (e.currentTarget.style.display = "none")}
         />

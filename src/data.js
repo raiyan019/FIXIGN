@@ -67,6 +67,7 @@ export const about = {
   ],
 };
 
+export const serviceImage = "/images/service-4.jpg"; // the one image in the big box
 export const services = [
   {
     id: 1,
@@ -90,7 +91,6 @@ export const services = [
     id: 4,
     title: ["Creates Strong First", "Impressions"],
     text: "Eye-catching visuals make a brand stand out and attract attention instantly.",
-    image: "/images/service-4.jpg",
   },
 ];
 export const DEFAULT_ACTIVE_CARD = 3; // 0 = first card ... 3 = fourth (yellow)
